@@ -1,0 +1,7 @@
+pandas~=2.2.3
+numpy~=2.2.5
+databricks-sql-connector
+python-dotenv
+pathlib
+pyarrow
+openpyxl
