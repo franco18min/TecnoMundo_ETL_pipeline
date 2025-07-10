@@ -5,3 +5,6 @@ python-dotenv
 pathlib
 pyarrow
 openpyxl
+pyspark==3.5.0
+pyspark-stubs
+sqlalchemy
