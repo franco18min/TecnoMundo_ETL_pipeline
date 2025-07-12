@@ -1,4 +1,178 @@
 TecnoMundo_ETL_pipeline/
+    .gitignore
+    .pre-commit-config.yaml
+    requirements-dev.txt
+    requirements.txt
+    setup.py
+    .git/
+        COMMIT_EDITMSG
+        config
+        description
+        HEAD
+        index
+        hooks/
+            applypatch-msg.sample
+            commit-msg.sample
+            fsmonitor-watchman.sample
+            post-update.sample
+            pre-applypatch.sample
+            pre-commit.sample
+            pre-merge-commit.sample
+            pre-push.sample
+            pre-rebase.sample
+            pre-receive.sample
+            prepare-commit-msg.sample
+            push-to-checkout.sample
+            sendemail-validate.sample
+            update.sample
+        info/
+            exclude
+        logs/
+            HEAD
+            refs/
+                heads/
+                    main
+                remotes/
+                    origin/
+                        main
+                        master
+        objects/
+            00/
+                fa46af9c882b62730a0c0699126d91b55a008c
+            06/
+                28b7e995f3a530b1daea6ba04e67472be84777
+            0c/
+                370c50d2b992a97fde3bc388f263fba41336d5
+            10/
+                5ce2da2d6447d11dfe32bfb846c3d5b199fc99
+            11/
+                46ac71b2c01110ce92fc87ecd766201c40dac0
+                f2bfdce400fbc2a328c30ff077aee41c1fb74f
+            13/
+                566b81b018ad684f3a35fee301741b2734c8f4
+            17/
+                c876814730b621ff55c8a732e9de04e1a95206
+            1a/
+                6ed73e72f44e6dd210386643eca08e329118a9
+            1b/
+                ff6d706c21d060c59cc6f43fcbe8b4d1db2f26
+            1d/
+                3ce46ba0d13183e3244cba5b930b5e27be4c6b
+            3d/
+                87e9ebfbdda3e432528c51c5f9f333cdfadf5c
+            3f/
+                cfd5940000d6cfa0bdbf717a6d349638486811
+            42/
+                bd3071ce04c914da50f528376b88395483b6f5
+            48/
+                6b546152aba2a6117e187813b7f10011ece4d0
+                6b81d627b7e2867648c2490e063308b552bb61
+            5c/
+                d9ab0e3f46323ea8a6544073c092861d3b1353
+            60/
+                d53f4280a5aa61707eca5c9b57d7e04e11ce70
+            61/
+                baeedbae1cc7164d837d0f264e4a2c0d816bb1
+            62/
+                164ba76f704b5e64121b2e6d629c5fdc2cf316
+                42dbd50d1f05072b1a85a37ef82d750a5fc845
+            63/
+                d18a24021654865f771484e456ea3888ee6301
+            66/
+                b08bbe97bbd28ee941d8c6453dff31209e0d95
+            68/
+                130b4dbac2d52531390ee930a6ca472e93d20b
+            6d/
+                d2fe7df07a65fdf163555d19dc0494264e659e
+            6f/
+                e60378665d998c7f2c0b59d3d346c32d9cb6ae
+            72/
+                68ca28052a75a58d557db62ecf6cacbeb5334c
+            75/
+                b8ef0667168975c541d977caa094995141f84a
+            7d/
+                c99fcb3798e22ffd79cc5ffd612a284b126a03
+            89/
+                ed14fb864010bac3170ee6905bf7c0f7d68a51
+            8e/
+                5a88b70532c99b50d437e83287e230c80d6c86
+            91/
+                d622fbd48b1fe4b282a5bd05f6742837a7f31f
+            94/
+                8d4a2f4bbcd24b810d0486e9919e7faeb83d95
+                a25f7f4cb416c083d265558da75d457237d671
+            97/
+                824ec9b0149e48c91dce4fee530335b327c686
+            99/
+                ae7b44955a998919c6b49efa20387da5a6d88a
+            9d/
+                1dcfdaf1a6857c5f83dc27019c7600e1ffaff8
+                5bde6231903344214a7a4d53dd168800af35b3
+            a4/
+                ec8969e85fbcdf1c570de84401aea2a0a4ba68
+            a5/
+                715599aac2fe4fc267020344fba0edab1f4148
+            a6/
+                c38eb872e3dc5731f6c4997a48f8f684857261
+            a7/
+                6c13b20b70322d37ca31458bf61f04ef80be97
+            ae/
+                fce94eaeefdf627886a6546ff4204e837bc92b
+            b9/
+                5117feb79f83c156ecb34ee6a165fb53891d0f
+            bb/
+                0184eb2e3cd80304a86aef56959d0b68dca0d0
+            bc/
+                56dbbf9531119e382de454db9fe19d68e6c0f1
+            bd/
+                577d5f9cf9b005895238c2aa12442e0b0a7c12
+            c1/
+                e2bec7e993e6f3014c0b01533c67723d0c06c3
+            cd/
+                1cffaf75b3670ea5c90fa675c99f37cad7535d
+            ce/
+                4b1f688f086dcfd63faa173122612ee44fd2b1
+                70f11079202d04837dc0a3cb26b27f0a84f2f3
+            d1/
+                f731b0a97237ae863db16d79ccf5f0800b1fdf
+            d2/
+                47ba562f37a0f560bcddb5435b331568f73ef7
+            d3/
+                80c7e917ccbe6f190f22922a58a52a0b4e3d96
+            d8/
+                b3f6cbf0c04e3481a87fcd0d588f490d9fdac7
+            df/
+                4e2e9b1bca7bb807075a689a42c95bb21614e1
+            e0/
+                25a2ff486fb94ca3ae9eccd45b801d9a30f1bf
+            e4/
+                fa2040df6737ba889fc7ecacf8418c5b4a7bdc
+            e6/
+                9de29bb2d1d6434b8b29ae775ad8c2e48c5391
+            e7/
+                e64ee46c4f4fd6d1e30764218fbde4ad89e14e
+            f0/
+                0f4d55e51ee108a7e27e4f43b84351be37b53c
+            f6/
+                ebba642595ce1fe6dd9d7c6252c90ad2eb749d
+            f7/
+                d2f31b6de1832dcc13235d2787711de9f4a93d
+            f8/
+                f5b181c0a2e804830872e6d46f6c8d989ded96
+            fc/
+                fbf43189974c7bcd0e7c778eef3cb4b5f5d0fd
+            ff/
+                4eb3b151d6ec9be24d30a3082d2135e573990c
+            info/
+            pack/
+        refs/
+            heads/
+                main
+            remotes/
+                origin/
+                    main
+                    master
+            tags/
     .github/
         workflows/
     .idea/
@@ -6,35 +180,62 @@ TecnoMundo_ETL_pipeline/
         misc.xml
         modules.xml
         TecnoMundo_ETL_pipeline.iml
+        vcs.xml
         workspace.xml
         inspectionProfiles/
             profiles_settings.xml
     conf/
         env/
+            .env
         pipelines/
+    data/
+        raw/
+            Category.xlsx
+            Reporte de ventas por articulos-2.csv
     docs/
     notebooks/
         databricks/
             development/
             production/
+                etl_pipeline.py
         jupyters/
+    reports/
+        cleaning/
     scripts/
-        estructura_proyecto.txt
-        print_directory.py
     src/
+        __init__.py
         tecno_etl/
             __init__.py
             extractors/
+                local_file_extractor.py
                 __init__.py
+                __pycache__/
+                    local_file_extractor.cpython-313.pyc
+                    __init__.cpython-313.pyc
             loaders/
+                databricks_table_loader.py
                 __init__.py
+                __pycache__/
+                    databricks_table_loader.cpython-313.pyc
+                    __init__.cpython-313.pyc
             pipelines/
+                run_local_ingestion.py
                 __init__.py
             transformers/
                 Data_cleaner.py
                 __init__.py
             utils/
+                databricks_connector.py
+                estructura_proyecto.txt
+                print_directory.py
                 __init__.py
+                __pycache__/
+                    databricks_connector.cpython-313.pyc
+                    __init__.cpython-313.pyc
+            __pycache__/
+                __init__.cpython-313.pyc
+        __pycache__/
+            __init__.cpython-313.pyc
     tests/
         __init__.py
         integration/
