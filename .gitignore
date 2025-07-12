@@ -36,9 +36,6 @@ env/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Databricks
-.databricks/
-
 # Operating system files
 .DS_Store
 Thumbs.db

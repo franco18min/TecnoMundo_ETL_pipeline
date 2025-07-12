@@ -6,7 +6,6 @@ TecnoMundo_ETL_pipeline/
     setup.py
     .git/
         COMMIT_EDITMSG
-        config
         description
         HEAD
         index
