@@ -1,15 +1,14 @@
 from pathlib import Path
 import logging
 import os
-import re
 import sys
 from dotenv import load_dotenv
 
 # --- 1. IMPORTACIÓN DE MÓDULOS DEL PROYECTO ---
+# Cada módulo tiene una responsabilidad única (Extraer, Transformar, Cargar).
 try:
-    # Importa la función especializada del módulo extractor
     from src.tecno_etl.extractors.local_file_extractor import read_file
-    # Importa la función especializada del módulo loader
+    from src.tecno_etl.transformers.data_normalizer import apply_standard_transformations
     from src.tecno_etl.loaders.databricks_table_loader import save_df_as_table
 except ImportError as e:
     logging.basicConfig()
@@ -40,43 +39,39 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-# --- 2. FUNCIONES DE TRANSFORMACIÓN Y ORQUESTACIÓN ---
-
-def sanitize_for_table_name(file_name: str) -> str:
-    """Limpia un nombre de archivo para usarlo como nombre de tabla SQL."""
-    name_without_ext = Path(file_name).stem
-    # Reutilizamos la lógica de saneamiento que podría estar en el loader,
-    # pero es bueno tenerla aquí para la lógica del pipeline.
-    # Para este ejemplo, se asume una función de saneamiento simple.
-    temp_name = re.sub(r'[\s\.\-/\\]+', '_', name_without_ext)
-    return re.sub(r'[^a-zA-Z0-9_]', '', temp_name).lower()
-
+# --- 2. FUNCIÓN ORQUESTADORA DEL PIPELINE ---
 
 def run_pipeline_for_file(file_path: Path, target_catalog: str, target_schema: str):
-    """Orquesta el proceso ETL para un único archivo local."""
+    """
+    Orquesta el proceso ETL completo para un único archivo local.
+    """
     file_name = file_path.name
     logger.info(f"--- Iniciando pipeline para el archivo local: {file_name} ---")
 
-    # 1. EXTRACT (Usa el extractor importado)
-    df, file_type = read_file(file_path)
-    if df is None:
+    # --- PASO 1: EXTRACT ---
+    # Llama al módulo extractor para leer los datos del archivo.
+    df_raw, _ = read_file(file_path)
+    if df_raw is None:
         logger.error(f"La extracción falló para {file_name}. Omitiendo archivo.")
         return False
 
-    # 2. TRANSFORM (Lógica de limpieza mínima)
-    logger.info("Iniciando transformaciones de datos...")
-    # La limpieza de filas vacías ya se hace en el extractor para archivos Excel.
-    # Aquí solo nos aseguramos de que los nombres de las columnas sean válidos.
-    # La limpieza de columnas se hace en el loader, pero podríamos hacer más aquí si fuera necesario.
-    logger.info(f"Transformación completada. {len(df)} filas listas para cargar.")
+    # --- PASO 2: TRANSFORM ---
+    # Llama al módulo transformador para aplicar todas las reglas de limpieza y normalización.
+    # Esto es crucial para asegurar que la tabla de dimensiones esté estandarizada.
+    df_transformed = apply_standard_transformations(df_raw)
 
-    # 3. LOAD (Usa el loader importado)
-    target_table = sanitize_for_table_name(file_name)
-    logger.info(f"Cargando datos en la tabla de Databricks: '{target_catalog}.{target_schema}.{target_table}'")
+    # --- PASO 3: LOAD ---
+    # Se genera un nombre de tabla dinámico basado en el nombre del archivo.
+    table_name = Path(file_name).stem.replace('-', '_').replace(' ', '_').lower()
 
-    # Llama a la función del loader para guardar el DataFrame
+    logger.info(f"Cargando datos en la tabla de Databricks: '{target_catalog}.{target_schema}.{table_name}'")
+
+    # Llama al módulo loader para guardar el DataFrame transformado.
     success = save_df_as_table(
-        df_to_save=df, catalog=target_catalog, schema=target_schema, table_name=target_table
+        df_to_save=df_transformed,
+        catalog=target_catalog,
+        schema=target_schema,
+        table_name=table_name
     )
     if success:
         logger.info(f"¡Carga exitosa para el archivo {file_name}!")
@@ -86,34 +81,34 @@ def run_pipeline_for_file(file_path: Path, target_catalog: str, target_schema: s
 
 
 def main():
-    """Función principal para escanear una carpeta local y procesar los archivos."""
-    logger.info("--- Iniciando Pipeline de Ingesta de Archivos Locales ---")
+    """
+    Función principal para procesar el archivo de categorías y cargarlo
+    como una tabla de dimensiones en Databricks.
+    """
+    logger.info("--- Iniciando Pipeline de Ingesta de la Tabla de Dimensiones 'Category' ---")
 
     # --- CONFIGURACIÓN ---
-    local_data_path = project_root / 'data' / 'raw'
+    # Apuntamos directamente al archivo de categorías.
+    category_file_path = project_root / 'data' / 'raw' / 'Category.xlsx'
+
+    # El destino es siempre el schema de dimensiones.
     TARGET_CATALOG = "workspace"
     TARGET_SCHEMA = "tecnomundo_data_dimensions"
 
     try:
-        logger.info(f"Escaneando el directorio local: {local_data_path}")
-        if not local_data_path.exists():
-            logger.error(f"El directorio de datos local no existe: {local_data_path}")
+        logger.info(f"Procesando el archivo de dimensiones: {category_file_path}")
+        if not category_file_path.exists():
+            logger.error(f"El archivo de categorías no existe en la ruta esperada: {category_file_path}")
             return 1
 
-        files_to_process = [f for f in local_data_path.iterdir() if f.is_file()]
+        # Ejecutamos el pipeline solo para este archivo.
+        success = run_pipeline_for_file(category_file_path, TARGET_CATALOG, TARGET_SCHEMA)
 
-        if not files_to_process:
-            logger.warning("No se encontraron archivos en el directorio de datos local. Saliendo.")
-            return 0
-
-        logger.info(f"Se encontraron {len(files_to_process)} archivo(s) para procesar.")
-        processed_count = 0
-        for file_path in files_to_process:
-            if run_pipeline_for_file(file_path, TARGET_CATALOG, TARGET_SCHEMA):
-                processed_count += 1
-
-        logger.info(
-            f"--- Pipeline finalizado. Se procesaron {processed_count} de {len(files_to_process)} archivos. ---")
+        if success:
+            logger.info("--- Pipeline de Ingesta de Dimensiones finalizado exitosamente. ---")
+        else:
+            logger.error("--- El Pipeline de Ingesta de Dimensiones falló. ---")
+            return 1
 
     except Exception as e:
         logger.error(f"Ocurrió un error inesperado en el pipeline: {e}", exc_info=True)
