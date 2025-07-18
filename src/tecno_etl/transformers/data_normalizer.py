@@ -9,11 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def _remove_accents(input_str: str) -> str:
-    """
-    Función de utilidad interna para eliminar acentos de una cadena de texto.
-    Ej: 'Categoría' -> 'Categoria'
-    """
-    # Se asegura de que el input sea un string para evitar errores con valores nulos o numéricos.
+    """Función de utilidad interna para eliminar acentos de una cadena de texto."""
     if not isinstance(input_str, str):
         return input_str
     nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -27,10 +23,8 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     """
     renamed_cols = {}
     for col in df.columns:
-        # Primero, eliminamos acentos del nombre de la columna
         new_col_name = _remove_accents(str(col))
-        # Luego, aplicamos las reglas de saneamiento existentes
-        new_col_name = new_col_name.replace('º', '').replace('Nº', 'num')
+        new_col_name = new_col_name.replace('Nº', 'num').replace('º', '')
         new_col_name = re.sub(r'[\s\.\-]+', '_', new_col_name)
         new_col_name = re.sub(r'[^a-zA-Z0-9_]', '', new_col_name).lower()
         renamed_cols[col] = new_col_name
@@ -38,17 +32,16 @@ def normalize_column_names(df: pd.DataFrame) -> pd.DataFrame:
     return df.rename(columns=renamed_cols)
 
 
-def conform_product_key(df: pd.DataFrame) -> pd.DataFrame:
+def conform_product_key_name(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Busca columnas de clave de producto inconsistentes (ej. 'cdigo', 'cdigo_interno')
-    y las estandariza a un único nombre: 'codigo_producto'.
+    Busca columnas de clave de producto inconsistentes y las estandariza a 'codigo_producto'.
     """
     df_conformed = df.copy()
     key_mappings = {
-        "cdigo": "codigo_producto",
         "codigo_interno": "codigo_producto",
+        "cdigo": "codigo_producto",
+        "codigo": "codigo_producto",
         "id": "codigo_producto"
-        # Añade aquí otros posibles nombres que puedas encontrar
     }
 
     for old_key, new_key in key_mappings.items():
@@ -59,39 +52,58 @@ def conform_product_key(df: pd.DataFrame) -> pd.DataFrame:
     return df_conformed
 
 
+def standardize_product_key_format(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Estandariza el CONTENIDO de la columna 'codigo_producto'.
+    - Elimina prefijos de caja (ej. 'A04-').
+    - Convierte el código a mayúsculas.
+    """
+    df_std = df.copy()
+    key_col = "codigo_producto"
+
+    if key_col in df_std.columns:
+        logger.info(f"Estandarizando formato de la clave '{key_col}'...")
+        # Se asegura de que la columna sea de tipo string para las operaciones
+        df_std[key_col] = df_std[key_col].astype(str)
+
+        # Expresión regular para encontrar el patrón de prefijo de caja (Letra, 2 dígitos, guion)
+        prefix_pattern = r'^[A-Z]\d{2}-'
+
+        # Aplica la transformación: elimina el prefijo y convierte a mayúsculas
+        df_std[key_col] = df_std[key_col].str.upper().str.replace(prefix_pattern, '', regex=True)
+        logger.info(f"  - Prefijos de caja eliminados y códigos convertidos a mayúsculas.")
+
+    return df_std
+
+
 def standardize_text_columns(df: pd.DataFrame) -> pd.DataFrame:
     """
     Estandariza todas las columnas de tipo texto (object) en el DataFrame.
-    - Elimina acentos.
-    - Elimina espacios en blanco al principio y al final.
-    - Convierte el texto a mayúsculas para consistencia.
     """
     df_std = df.copy()
     for col in df_std.select_dtypes(include=['object']).columns:
-        # Se asegura de que la columna sea de tipo string para evitar errores con valores nulos
-        # y aplica las transformaciones en cadena.
-        df_std[col] = df_std[col].astype(str).apply(_remove_accents).str.strip().str.upper()
-        logger.info(f"Columna de texto estandarizada (acentos, espacios, mayúsculas): '{col}'")
+        # No volvemos a procesar la clave del producto que ya tiene su propia lógica
+        if col != "codigo_producto":
+            df_std[col] = df_std[col].astype(str).apply(_remove_accents).str.strip().str.upper()
+            logger.info(f"Columna de texto estandarizada (acentos, espacios, mayúsculas): '{col}'")
     return df_std
 
 
 def conform_product_name_column(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Aplica reglas de normalización específicas a la columna de nombre de producto.
+    Busca la columna de nombre de producto y la estandariza a 'nombre_del_producto'.
     """
     df_conformed = df.copy()
     standard_name_col = "nombre_del_producto"
+    name_mappings = {
+        "nombre_del_articulo": standard_name_col,
+        "nombre_del_producto": standard_name_col
+    }
 
-    # Primero, estandarizamos el nombre de la columna que contiene el nombre del artículo/producto.
-    if "nombre_del_artculo" in df_conformed.columns:
-        df_conformed = df_conformed.rename(columns={"nombre_del_artculo": standard_name_col})
-        logger.info(f"Nombre de columna de producto conformado: 'nombre_del_artculo' -> '{standard_name_col}'")
-
-    # Luego, si la columna existe, se pueden aplicar limpiezas al contenido.
-    # (Esta es una función placeholder para futuras reglas de negocio)
-    if standard_name_col in df_conformed.columns:
-        # Ejemplo: podrías añadir lógica para reemplazar "BT" por "BLUETOOTH", etc.
-        pass
+    for old_name, new_name in name_mappings.items():
+        if old_name in df_conformed.columns:
+            df_conformed = df_conformed.rename(columns={old_name: new_name})
+            logger.info(f"Nombre de columna de producto conformado: '{old_name}' -> '{new_name}'")
 
     return df_conformed
 
@@ -101,11 +113,18 @@ def apply_standard_transformations(df: pd.DataFrame) -> pd.DataFrame:
     Función orquestadora que aplica una secuencia de transformaciones estándar.
     """
     logger.info("Aplicando secuencia de transformaciones estándar...")
-    # El orden es importante: primero normalizar nombres de columna, luego el contenido.
+    # El orden es importante:
+    # 1. Normalizar nombres de columna.
     df_transformed = normalize_column_names(df)
-    df_transformed = conform_product_key(df_transformed)
+    # 2. Conformar el NOMBRE de la columna de la clave.
+    df_transformed = conform_product_key_name(df_transformed)
+    # 3. Estandarizar el FORMATO de la clave.
+    df_transformed = standardize_product_key_format(df_transformed)
+    # 4. Conformar el nombre de la columna del nombre del producto.
     df_transformed = conform_product_name_column(df_transformed)
+    # 5. Estandarizar el resto de columnas de texto.
     df_transformed = standardize_text_columns(df_transformed)
+
     logger.info("Secuencia de transformaciones estándar completada.")
 
     return df_transformed
