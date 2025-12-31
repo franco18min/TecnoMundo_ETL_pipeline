@@ -1,10 +1,7 @@
-pandas~=2.2.3
-numpy~=2.2.5
-databricks-sql-connector
-python-dotenv
-pathlib
-pyarrow
-openpyxl
-pyspark==3.5.0
-pyspark-stubs
-databricks-sdk
+boto3>=1.34.0
+pandas>=2.1.4
+numpy>=1.26.0
+openpyxl>=3.1.2
+python-dateutil>=2.8.2
+python-dotenv>=1.0.0
+pydantic>=2.5.0

@@ -42,3 +42,20 @@ Thumbs.db
 
 # data
 data/
+
+#miscelanea
+.trae
+
+# AWS Lambda
+lambda_functions/*/package/
+lambda_functions/*/function.zip
+
+# AWS Credentials (NUNCA SUBIR)
+.env.aws
+!.env.aws.example
+*accessKeys.csv
+*.pem
+
+# Cache folders
+.pytest_cache/
+.ruff_cache/
